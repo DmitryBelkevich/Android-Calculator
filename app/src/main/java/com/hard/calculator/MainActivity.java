@@ -196,8 +196,6 @@ public class MainActivity extends AppCompatActivity {
                 case "div":
                     result = cache / buffer;
                     break;
-                default:
-                    result = 0;
             }
 
             textView.setText(String.valueOf(result));
