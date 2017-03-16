@@ -5,10 +5,9 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 public class MainActivity extends AppCompatActivity {
-    private Delegate delegate = new Delegate();
-
     private TextView textView;
     private Button buttonClear;
     private Button buttonBackspace;
@@ -28,25 +27,72 @@ public class MainActivity extends AppCompatActivity {
     private Button buttonDiv;
     private Button buttonEq;
 
-    private int cache;
-    private String operation;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        findElements();
         addListeners();
     }
 
-    private class Delegate {
+    public void findElements() {
+        textView = (TextView) findViewById(R.id.textView1);
+        buttonClear = (Button) findViewById(R.id.buttonClear);
+        buttonBackspace = (Button) findViewById(R.id.buttonBackspace);
+        button0 = (Button) findViewById(R.id.button0);
+        button1 = (Button) findViewById(R.id.button1);
+        button2 = (Button) findViewById(R.id.button2);
+        button3 = (Button) findViewById(R.id.button3);
+        button4 = (Button) findViewById(R.id.button4);
+        button5 = (Button) findViewById(R.id.button5);
+        button6 = (Button) findViewById(R.id.button6);
+        button7 = (Button) findViewById(R.id.button7);
+        button8 = (Button) findViewById(R.id.button8);
+        button9 = (Button) findViewById(R.id.button9);
+        buttonSum = (Button) findViewById(R.id.buttonSum);
+        buttonDif = (Button) findViewById(R.id.buttonDif);
+        buttonMult = (Button) findViewById(R.id.buttonMult);
+        buttonDiv = (Button) findViewById(R.id.buttonDiv);
+        buttonEq = (Button) findViewById(R.id.buttonEq);
+    }
+
+    public void addListeners() {
+        Receiver receiver = new Receiver();
+
+        buttonClear.setOnClickListener(new ActionClearCommand(receiver));
+        buttonBackspace.setOnClickListener(new ActionBackspaceCommand(receiver));
+        button0.setOnClickListener(new Action0Command(receiver));
+        button1.setOnClickListener(new Action1Command(receiver));
+        button2.setOnClickListener(new Action2Command(receiver));
+        button3.setOnClickListener(new Action3Command(receiver));
+        button4.setOnClickListener(new Action4Command(receiver));
+        button5.setOnClickListener(new Action5Command(receiver));
+        button6.setOnClickListener(new Action6Command(receiver));
+        button7.setOnClickListener(new Action7Command(receiver));
+        button8.setOnClickListener(new Action8Command(receiver));
+        button9.setOnClickListener(new Action9Command(receiver));
+        buttonSum.setOnClickListener(new ActionSumCommand(receiver));
+        buttonDif.setOnClickListener(new ActionDifCommand(receiver));
+        buttonMult.setOnClickListener(new ActionMultCommand(receiver));
+        buttonDiv.setOnClickListener(new ActionDivCommand(receiver));
+        buttonEq.setOnClickListener(new ActionEqCommand(receiver));
+    }
+
+    /*
+    Design pattern - Command
+     */
+    private class Receiver {
+        private double cache;
+        private Operation operation;
+
         public void actionClear() {
             String buffer = textView.getText().toString();
 
             if (!buffer.equals("0")) {
                 textView.setText("0");
                 cache = 0;
-                operation = "";
+                operation = null;
             }
         }
 
@@ -151,194 +197,287 @@ public class MainActivity extends AppCompatActivity {
         }
 
         public void actionSum() {
-            cache = Integer.valueOf(textView.getText().toString());
-            operation = "sum";
+            cache = Double.valueOf(textView.getText().toString());
+            operation = Operation.SUM;
 
             textView.setText("0");
         }
 
         public void actionDif() {
-            cache = Integer.valueOf(textView.getText().toString());
-            operation = "dif";
+            cache = Double.valueOf(textView.getText().toString());
+            operation = Operation.DIF;
 
             textView.setText("0");
         }
 
         public void actionMult() {
-            cache = Integer.valueOf(textView.getText().toString());
-            operation = "mult";
+            cache = Double.valueOf(textView.getText().toString());
+            operation = Operation.MULT;
 
             textView.setText("0");
         }
 
         public void actionDiv() {
-            cache = Integer.valueOf(textView.getText().toString());
-            operation = "div";
+            cache = Double.valueOf(textView.getText().toString());
+            operation = Operation.DIV;
 
             textView.setText("0");
         }
 
         public void actionEq() {
-            int buffer = Integer.valueOf(textView.getText().toString());
+            double buffer = Double.valueOf(textView.getText().toString());
 
-            int result = 0;
+            double result = 0;
 
-            switch (operation) {
-                case "sum":
-                    result = cache + buffer;
-                    break;
-                case "dif":
-                    result = cache - buffer;
-                    break;
-                case "mult":
-                    result = cache * buffer;
-                    break;
-                case "div":
-                    result = cache / buffer;
-                    break;
+            if (operation != null) {
+                switch (operation) {
+                    case SUM:
+                        result = cache + buffer;
+                        break;
+                    case DIF:
+                        result = cache - buffer;
+                        break;
+                    case MULT:
+                        result = cache * buffer;
+                        break;
+                    case DIV:
+                        try {
+                            result = cache / buffer;
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            result = 9999;
+                            Toast.makeText(MainActivity.this, "divide by zero", Toast.LENGTH_SHORT).show();
+                        }
+                        break;
+                }
             }
+
+            // отбросить ноль
+
+            //cache = buffer;
 
             textView.setText(String.valueOf(result));
         }
     }
 
-    public void addListeners() {
-        textView = (TextView) findViewById(R.id.textView1);
+    private class ActionClearCommand implements View.OnClickListener {
+        private Receiver receiver;
 
-        buttonClear = (Button) findViewById(R.id.buttonClear);
-        buttonClear.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                delegate.actionClear();
-            }
-        });
+        private ActionClearCommand(Receiver receiver) {
+            this.receiver = receiver;
+        }
 
-        buttonBackspace = (Button) findViewById(R.id.buttonBackspace);
-        buttonBackspace.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                delegate.actionBackspace();
-            }
-        });
+        @Override
+        public void onClick(View v) {
+            receiver.actionClear();
+        }
+    }
 
-        button0 = (Button) findViewById(R.id.button0);
-        button0.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                delegate.action0();
-            }
-        });
+    private class ActionBackspaceCommand implements View.OnClickListener {
+        private Receiver receiver;
 
-        button1 = (Button) findViewById(R.id.button1);
-        button1.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                delegate.action1();
-            }
-        });
+        private ActionBackspaceCommand(Receiver receiver) {
+            this.receiver = receiver;
+        }
 
-        button2 = (Button) findViewById(R.id.button2);
-        button2.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                delegate.action2();
-            }
-        });
+        @Override
+        public void onClick(View v) {
+            receiver.actionBackspace();
+        }
+    }
 
-        button3 = (Button) findViewById(R.id.button3);
-        button3.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                delegate.action3();
-            }
-        });
+    private class Action0Command implements View.OnClickListener {
+        private Receiver receiver;
 
-        button4 = (Button) findViewById(R.id.button4);
-        button4.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                delegate.action4();
-            }
-        });
+        private Action0Command(Receiver receiver) {
+            this.receiver = receiver;
+        }
 
-        button5 = (Button) findViewById(R.id.button5);
-        button5.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                delegate.action5();
-            }
-        });
+        @Override
+        public void onClick(View v) {
+            receiver.action0();
+        }
+    }
 
-        button6 = (Button) findViewById(R.id.button6);
-        button6.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                delegate.action6();
-            }
-        });
+    private class Action1Command implements View.OnClickListener {
+        private Receiver receiver;
 
-        button7 = (Button) findViewById(R.id.button7);
-        button7.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                delegate.action7();
-            }
-        });
+        private Action1Command(Receiver receiver) {
+            this.receiver = receiver;
+        }
 
-        button8 = (Button) findViewById(R.id.button8);
-        button8.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                delegate.action8();
-            }
-        });
+        @Override
+        public void onClick(View v) {
+            receiver.action1();
+        }
+    }
 
-        button9 = (Button) findViewById(R.id.button9);
-        button9.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                delegate.action9();
-            }
-        });
+    private class Action2Command implements View.OnClickListener {
+        private Receiver receiver;
 
-        buttonSum = (Button) findViewById(R.id.buttonSum);
-        buttonSum.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                delegate.actionSum();
-            }
-        });
+        private Action2Command(Receiver receiver) {
+            this.receiver = receiver;
+        }
 
-        buttonDif = (Button) findViewById(R.id.buttonDif);
-        buttonDif.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                delegate.actionDif();
-            }
-        });
+        @Override
+        public void onClick(View v) {
+            receiver.action2();
+        }
+    }
 
-        buttonMult = (Button) findViewById(R.id.buttonMult);
-        buttonMult.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                delegate.actionMult();
-            }
-        });
+    private class Action3Command implements View.OnClickListener {
+        private Receiver receiver;
 
-        buttonDiv = (Button) findViewById(R.id.buttonDiv);
-        buttonDiv.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                delegate.actionDiv();
-            }
-        });
+        private Action3Command(Receiver receiver) {
+            this.receiver = receiver;
+        }
 
-        buttonEq = (Button) findViewById(R.id.buttonEq);
-        buttonEq.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                delegate.actionEq();
-            }
-        });
+        @Override
+        public void onClick(View v) {
+            receiver.action3();
+        }
+    }
+
+    private class Action4Command implements View.OnClickListener {
+        private Receiver receiver;
+
+        private Action4Command(Receiver receiver) {
+            this.receiver = receiver;
+        }
+
+        @Override
+        public void onClick(View v) {
+            receiver.action4();
+        }
+    }
+
+    private class Action5Command implements View.OnClickListener {
+        private Receiver receiver;
+
+        private Action5Command(Receiver receiver) {
+            this.receiver = receiver;
+        }
+
+        @Override
+        public void onClick(View v) {
+            receiver.action5();
+        }
+    }
+
+    private class Action6Command implements View.OnClickListener {
+        private Receiver receiver;
+
+        private Action6Command(Receiver receiver) {
+            this.receiver = receiver;
+        }
+
+        @Override
+        public void onClick(View v) {
+            receiver.action6();
+        }
+    }
+
+    private class Action7Command implements View.OnClickListener {
+        private Receiver receiver;
+
+        private Action7Command(Receiver receiver) {
+            this.receiver = receiver;
+        }
+
+        @Override
+        public void onClick(View v) {
+            receiver.action7();
+        }
+    }
+
+    private class Action8Command implements View.OnClickListener {
+        private Receiver receiver;
+
+        private Action8Command(Receiver receiver) {
+            this.receiver = receiver;
+        }
+
+        @Override
+        public void onClick(View v) {
+            receiver.action8();
+        }
+    }
+
+    private class Action9Command implements View.OnClickListener {
+        private Receiver receiver;
+
+        private Action9Command(Receiver receiver) {
+            this.receiver = receiver;
+        }
+
+        @Override
+        public void onClick(View v) {
+            receiver.action9();
+        }
+    }
+
+    private class ActionSumCommand implements View.OnClickListener {
+        private Receiver receiver;
+
+        private ActionSumCommand(Receiver receiver) {
+            this.receiver = receiver;
+        }
+
+        @Override
+        public void onClick(View v) {
+            receiver.actionSum();
+        }
+    }
+
+    private class ActionDifCommand implements View.OnClickListener {
+        private Receiver receiver;
+
+        private ActionDifCommand(Receiver receiver) {
+            this.receiver = receiver;
+        }
+
+        @Override
+        public void onClick(View v) {
+            receiver.actionDif();
+        }
+    }
+
+    private class ActionMultCommand implements View.OnClickListener {
+        private Receiver receiver;
+
+        private ActionMultCommand(Receiver receiver) {
+            this.receiver = receiver;
+        }
+
+        @Override
+        public void onClick(View v) {
+            receiver.actionMult();
+        }
+    }
+
+    private class ActionDivCommand implements View.OnClickListener {
+        private Receiver receiver;
+
+        private ActionDivCommand(Receiver receiver) {
+            this.receiver = receiver;
+        }
+
+        @Override
+        public void onClick(View v) {
+            receiver.actionDiv();
+        }
+    }
+
+    private class ActionEqCommand implements View.OnClickListener {
+        private Receiver receiver;
+
+        private ActionEqCommand(Receiver receiver) {
+            this.receiver = receiver;
+        }
+
+        @Override
+        public void onClick(View v) {
+            receiver.actionEq();
+        }
     }
 }
