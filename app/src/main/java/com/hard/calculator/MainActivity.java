@@ -34,6 +34,8 @@ public class MainActivity extends AppCompatActivity {
 
         findElements();
         addListeners();
+
+        // Hello World
     }
 
     public void findElements() {
