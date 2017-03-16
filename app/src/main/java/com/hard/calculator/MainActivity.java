@@ -83,6 +83,7 @@ public class MainActivity extends AppCompatActivity {
     Design pattern - Command
      */
     private class Receiver {
+        private Arithmetics arithmetics = new Arithmetics();
         private double cache;
         private Operation operation;
 
@@ -232,17 +233,17 @@ public class MainActivity extends AppCompatActivity {
             if (operation != null) {
                 switch (operation) {
                     case SUM:
-                        result = cache + buffer;
+                        result = arithmetics.sum(cache, buffer);
                         break;
                     case DIF:
-                        result = cache - buffer;
+                        result = arithmetics.dif(cache, buffer);
                         break;
                     case MULT:
-                        result = cache * buffer;
+                        result = arithmetics.mult(cache, buffer);
                         break;
                     case DIV:
                         try {
-                            result = cache / buffer;
+                            result = arithmetics.div(cache, buffer);
                         } catch (Exception e) {
                             e.printStackTrace();
                             result = 9999;
